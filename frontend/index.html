@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CineBook - Movie Booking System</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+  <header class="navbar">
+    <a href="#" class="logo">🎬 CineBook</a>
+    <span> MOVIE BOOKING SYSTEM </span>
+  </header>
+
+  <main class="container">
+
+    <section class="hero">
+      <div>
+        <p class="eyebrow">WELCOME TO CINEBOOK</p>
+        <h1>Discover Your Next <span>Favourite Movie</span></h1>
+        <p>Explore movies and manage your movie catalogue easily.</p>
+        <a href="#movies" class="hero-btn">Explore Movies</a>
+      </div>
+      <div class="hero-icon">🍿</div>
+    </section>
+
+    <section class="stats">
+      <div class="stat-card">
+        <p>Total Movies</p>
+        <h2 id="totalMovies">0</h2>
+      </div>
+
+      <div class="stat-card">
+        <p>Available Seats</p>
+        <h2 id="totalSeats">0</h2>
+      </div>
+
+      <div class="stat-card">
+        <p>Average Ticket Price</p>
+        <h2 id="averagePrice">₹0</h2>
+      </div>
+    </section>
+
+    <section id="movies" class="movie-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MOVIE COLLECTION</p>
+          <h2>Available Movies</h2>
+        </div>
+
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="Search movies..."
+        >
+      </div>
+
+      <div id="message" class="message" hidden></div>
+
+      <div id="movieGrid" class="movie-grid">
+        <p class="empty">Loading movies...</p>
+      </div>
+    </section>
+
+    <section class="form-section" id="movieFormSection">
+      <p class="eyebrow">MOVIE MANAGEMENT</p>
+      <h2 id="formTitle">Add New Movie</h2>
+      <p class="subtitle">Enter movie details below.</p>
+
+      <form id="movieForm">
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="title">Movie Title</label>
+            <input id="title" type="text"
+              placeholder="Enter movie title" required>
+          </div>
+
+          <div class="field">
+            <label for="genre">Genre</label>
+            <select id="genre" required>
+              <option value="">Select Genre</option>
+              <option>Action</option>
+              <option>Adventure</option>
+              <option>Comedy</option>
+              <option>Drama</option>
+              <option>Horror</option>
+              <option>Romance</option>
+              <option>Science Fiction</option>
+              <option>Thriller</option>
+              <option>Animation</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="language">Language</label>
+            <input id="language" type="text"
+              placeholder="Enter language" required>
+          </div>
+
+          <div class="field">
+            <label for="duration">Duration (Minutes)</label>
+            <input id="duration" type="number"
+              min="1" placeholder="e.g. 169" required>
+          </div>
+
+          <div class="field">
+            <label for="ticketPrice">Ticket Price (₹)</label>
+            <input id="ticketPrice" type="number"
+              min="0" step="0.01" placeholder="e.g. 250" required>
+          </div>
+
+          <div class="field">
+            <label for="availableSeats">Available Seats</label>
+            <input id="availableSeats" type="number"
+              min="0" placeholder="e.g. 100" required>
+          </div>
+        </div>
+
+        <div class="form-buttons">
+          <button type="submit" id="submitButton" class="primary-btn">
+            + Add Movie
+          </button>
+
+          <button type="button" id="cancelButton"
+            class="secondary-btn" hidden>
+            Cancel
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <footer>
+      <h3>🎬 CineBook</h3>
+      <p>Movie Booking System | Node.js | Express | MongoDB</p>
+    </footer>
+
+  </main>
+</body>
+</html>
