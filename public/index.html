@@ -1,145 +1,242 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CineBook - Movie Booking System</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="script.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Movie Booking System</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
-  <header class="navbar">
-    <a href="#" class="logo">🎬 CineBook</a>
-    <span> MOVIE BOOKING SYSTEM </span>
-  </header>
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <a href="#home" class="logo">
+            <span class="logo-icon">🎬</span>
+            Movie <span>Booking</span>
+        </a>
 
-  <main class="container">
+        <nav class="nav-links">
+            <a href="#home" class="nav-link active">Home</a>
+            <a href="#add-movie" class="nav-link">Add Movie</a>
+            <a href="#movies" class="nav-link">Movies</a>
+        </nav>
+    </header>
 
-    <section class="hero">
-      <div>
-        <p class="eyebrow">WELCOME TO CINEBOOK</p>
-        <h1>Discover Your Next <span>Favourite Movie</span></h1>
-        <p>Explore movies and manage your movie catalogue easily.</p>
-        <a href="#movies" class="hero-btn">Explore Movies</a>
-      </div>
-      <div class="hero-icon">🍿</div>
-    </section>
+    <!-- HERO SECTION -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <span class="eyebrow">YOUR CINEMA EXPERIENCE STARTS HERE</span>
 
-    <section class="stats">
-      <div class="stat-card">
-        <p>Total Movies</p>
-        <h2 id="totalMovies">0</h2>
-      </div>
+            <h1>
+                Welcome to<br>
+                <span>Movie Booking</span> System
+            </h1>
 
-      <div class="stat-card">
-        <p>Available Seats</p>
-        <h2 id="totalSeats">0</h2>
-      </div>
+            <p>
+                Explore movies, add new releases and manage your
+                movie collection with ease.
+            </p>
 
-      <div class="stat-card">
-        <p>Average Ticket Price</p>
-        <h2 id="averagePrice">₹0</h2>
-      </div>
-    </section>
+            <div class="hero-buttons">
+                <a href="#movies" class="btn btn-primary">
+                    ▶ Explore Movies
+                </a>
 
-    <section id="movies" class="movie-section">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">MOVIE COLLECTION</p>
-          <h2>Available Movies</h2>
+                <a href="#add-movie" class="btn btn-outline">
+                    + Add Movie
+                </a>
+            </div>
         </div>
 
-        <input
-          type="search"
-          id="searchInput"
-          placeholder="Search movies..."
-        >
-      </div>
-
-      <div id="message" class="message" hidden></div>
-
-      <div id="movieGrid" class="movie-grid">
-        <p class="empty">Loading movies...</p>
-      </div>
+        <div class="hero-decoration">
+            <div class="hero-film">🎞️</div>
+            <div class="hero-popcorn">🍿</div>
+        </div>
     </section>
 
-    <section class="form-section" id="movieFormSection">
-      <p class="eyebrow">MOVIE MANAGEMENT</p>
-      <h2 id="formTitle">Add New Movie</h2>
-      <p class="subtitle">Enter movie details below.</p>
+    <main class="container">
 
-      <form id="movieForm">
+        <!-- STATISTICS -->
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-icon red">🎬</div>
+                <div>
+                    <p>Total Movies</p>
+                    <h2 id="totalMovies">0</h2>
+                </div>
+            </div>
 
-        <div class="form-grid">
-          <div class="field">
-            <label for="title">Movie Title</label>
-            <input id="title" type="text"
-              placeholder="Enter movie title" required>
-          </div>
+            <div class="stat-card">
+                <div class="stat-icon blue">💺</div>
+                <div>
+                    <p>Available Seats</p>
+                    <h2 id="totalSeats">0</h2>
+                </div>
+            </div>
 
-          <div class="field">
-            <label for="genre">Genre</label>
-            <select id="genre" required>
-              <option value="">Select Genre</option>
-              <option>Action</option>
-              <option>Adventure</option>
-              <option>Comedy</option>
-              <option>Drama</option>
-              <option>Horror</option>
-              <option>Romance</option>
-              <option>Science Fiction</option>
-              <option>Thriller</option>
-              <option>Animation</option>
-              <option>Other</option>
-            </select>
-          </div>
+            <div class="stat-card">
+                <div class="stat-icon green">₹</div>
+                <div>
+                    <p>Average Ticket Price</p>
+                    <h2 id="averagePrice">₹0</h2>
+                </div>
+            </div>
+        </section>
 
-          <div class="field">
-            <label for="language">Language</label>
-            <input id="language" type="text"
-              placeholder="Enter language" required>
-          </div>
+        <!-- ADD / EDIT MOVIE -->
+        <section class="form-section" id="add-movie">
 
-          <div class="field">
-            <label for="duration">Duration (Minutes)</label>
-            <input id="duration" type="number"
-              min="1" placeholder="e.g. 169" required>
-          </div>
+            <div class="section-title">
+                <div class="title-icon">▤</div>
+                <div>
+                    <h2>Manage Movies</h2>
+                    <p>Add a new movie or update existing movie details.</p>
+                </div>
+            </div>
 
-          <div class="field">
-            <label for="ticketPrice">Ticket Price (₹)</label>
-            <input id="ticketPrice" type="number"
-              min="0" step="0.01" placeholder="e.g. 250" required>
-          </div>
+            <div id="message" class="message" role="status" aria-live="polite"></div>
 
-          <div class="field">
-            <label for="availableSeats">Available Seats</label>
-            <input id="availableSeats" type="number"
-              min="0" placeholder="e.g. 100" required>
-          </div>
+            <form id="movieForm">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="title">🎬 Movie Title</label>
+                        <input
+                            type="text"
+                            id="title"
+                            placeholder="Enter movie title"
+                            maxlength="100"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="genre">◇ Genre</label>
+                        <input
+                            type="text"
+                            id="genre"
+                            placeholder="e.g. Action, Comedy, Drama"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="language">◎ Language</label>
+                        <input
+                            type="text"
+                            id="language"
+                            placeholder="Enter movie language"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duration">◷ Duration (Minutes)</label>
+                        <input
+                            type="number"
+                            id="duration"
+                            placeholder="e.g. 150"
+                            min="1"
+                            step="1"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ticketPrice">₹ Ticket Price</label>
+                        <input
+                            type="number"
+                            id="ticketPrice"
+                            placeholder="e.g. 250"
+                            min="0"
+                            step="any"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="availableSeats">♧ Available Seats</label>
+                        <input
+                            type="number"
+                            id="availableSeats"
+                            placeholder="e.g. 100"
+                            min="0"
+                            step="1"
+                            value="100"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+                <div class="form-buttons">
+                    <button type="submit" id="submitBtn" class="btn btn-primary">
+                        + Add Movie
+                    </button>
+
+                    <button
+                        type="button"
+                        id="cancelEdit"
+                        class="btn btn-light"
+                        hidden
+                    >
+                        ✕ Cancel Edit
+                    </button>
+                </div>
+
+            </form>
+        </section>
+
+        <!-- MOVIE LIST -->
+        <section class="movies-section" id="movies">
+
+            <div class="movies-heading">
+                <div class="section-title">
+                    <div class="title-icon">▤</div>
+                    <div>
+                        <h2>Available Movies</h2>
+                        <p>Browse and manage all movies in the database.</p>
+                    </div>
+                </div>
+
+                <button type="button" id="refreshBtn" class="btn btn-light">
+                    ↻ Refresh
+                </button>
+            </div>
+
+            <div class="movie-tools">
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Search movies by title, genre or language..."
+                >
+            </div>
+
+            <div id="movieList" class="movie-grid">
+                <p class="loading">Loading movies...</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">🎬 Movie Booking System</div>
+            <p>Developed using Node.js, Express and MongoDB</p>
+            <p>© 2026 Movie Booking System. All rights reserved.</p>
         </div>
-
-        <div class="form-buttons">
-          <button type="submit" id="submitButton" class="primary-btn">
-            + Add Movie
-          </button>
-
-          <button type="button" id="cancelButton"
-            class="secondary-btn" hidden>
-            Cancel
-          </button>
-        </div>
-
-      </form>
-    </section>
-
-    <footer>
-      <h3>🎬 CineBook</h3>
-      <p>Movie Booking System | Node.js | Express | MongoDB</p>
     </footer>
 
-  </main>
+    <script src="script.js"></script>
+
 </body>
 </html>

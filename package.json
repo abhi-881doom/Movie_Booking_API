@@ -1,19 +1,15 @@
+
 {
-  "name": "movie_booking_api",
+  "name": "movie-booking-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Movie Booking System using Node.js, Express and MongoDB Atlas",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "cors": "^2.8.6",
+    "cors": "^2.8.5",
     "dotenv": "^18.0.9",
     "express": "^5.3.0",
     "mongoose": "^9.11.4"

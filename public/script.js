@@ -1,295 +1,495 @@
+// ==========================================
+// MOVIE BOOKING SYSTEM - FRONTEND JAVASCRIPT
+// ==========================================
 
-const API_URL = "http://localhost:3000/movies";
+const API_URL = "/movies";
 
-const movieGrid = document.getElementById("movieGrid");
 const movieForm = document.getElementById("movieForm");
+const movieList = document.getElementById("movieList");
+const message = document.getElementById("message");
+
+const submitBtn = document.getElementById("submitBtn");
+const cancelEditBtn = document.getElementById("cancelEdit");
+const refreshBtn = document.getElementById("refreshBtn");
 const searchInput = document.getElementById("searchInput");
-const messageBox = document.getElementById("message");
 
-let movies = [];
-let editingId = null;
-let messageTimer;
+let editingMovieId = null;
+let allMovies = [];
 
-// Show success or error message
-function showMessage(message, isError = false) {
-  clearTimeout(messageTimer);
+// Sample cinema images used as movie-card artwork.
+// These are illustrative images, not official movie posters.
+const posterImages = [
+    "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1505685296765-3a2736de412f?auto=format&fit=crop&w=400&q=80"
+];
 
-  messageBox.textContent = message;
-  messageBox.classList.toggle("error", isError);
-  messageBox.hidden = false;
+// ==========================================
+// DISPLAY MESSAGE
+// ==========================================
 
-  messageTimer = setTimeout(() => {
-    messageBox.hidden = true;
-  }, 4000);
+function showMessage(text, type = "success") {
+    message.textContent = text;
+    message.className = `message ${type}`;
+
+    window.scrollTo({
+        top: document.getElementById("add-movie").offsetTop - 90,
+        behavior: "smooth"
+    });
+
+    setTimeout(() => {
+        message.className = "message";
+        message.textContent = "";
+    }, 4000);
 }
 
-// Send request to backend
-async function apiRequest(url, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
-      ...options.headers
-    }
-  });
+// ==========================================
+// ESCAPE HTML TO PREVENT HTML INJECTION
+// ==========================================
 
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.message || data.error || "Something went wrong");
-  }
-
-  return data;
-}
-
-// Escape database values before displaying them as HTML
 function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, character => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[character]);
-}
+    return String(value ?? "").replace(/[&<>"']/g, character => {
+        const entities = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        };
 
-// Get all movies from database
-async function loadMovies() {
-  movieGrid.innerHTML = '<p class="empty">Loading movies...</p>';
-
-  try {
-    const data = await apiRequest(API_URL);
-    movies = data.movies || [];
-
-    displayMovies();
-    updateStatistics();
-
-  } catch (error) {
-    movieGrid.innerHTML =
-      '<p class="empty">Unable to load movies. Check your backend.</p>';
-
-    showMessage(error.message, true);
-  }
-}
-
-// Update dashboard statistics
-function updateStatistics() {
-  document.getElementById("totalMovies").textContent = movies.length;
-
-  const seats = movies.reduce(
-    (sum, movie) => sum + Number(movie.availableSeats || 0), 0
-  );
-
-  const average = movies.length
-    ? movies.reduce(
-        (sum, movie) => sum + Number(movie.ticketPrice || 0), 0
-      ) / movies.length
-    : 0;
-
-  document.getElementById("totalSeats").textContent =
-    seats.toLocaleString("en-IN");
-
-  document.getElementById("averagePrice").textContent =
-    average.toLocaleString("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 2
+        return entities[character];
     });
 }
 
-// Display movie cards
-function displayMovies() {
-  const search = searchInput.value.trim().toLowerCase();
+// ==========================================
+// GET ALL MOVIES
+// ==========================================
 
-  const filtered = movies.filter(movie =>
-    String(movie.title || "").toLowerCase().includes(search)
-  );
+async function getMovies() {
+    movieList.innerHTML = '<p class="loading">Loading movies...</p>';
+    refreshBtn.disabled = true;
 
-  if (filtered.length === 0) {
-    movieGrid.innerHTML =
-      '<p class="empty">No movies found. Add a movie to get started.</p>';
-    return;
-  }
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
 
-  movieGrid.innerHTML = filtered.map(movie => `
-    <article class="movie-card">
+        if (!response.ok) {
+            throw new Error(data.message || "Unable to fetch movies");
+        }
 
-      <div class="poster">🎬</div>
+        allMovies = Array.isArray(data.movies) ? data.movies : [];
 
-      <h3>${escapeHTML(movie.title)}</h3>
+        displayMovies(allMovies);
+        updateStatistics(allMovies);
 
-      <span class="tag">${escapeHTML(movie.genre)}</span>
-      <span class="tag">${escapeHTML(movie.language)}</span>
-
-      <p>Duration: ${escapeHTML(movie.duration)} minutes</p>
-
-      <p>Available Seats: ${escapeHTML(movie.availableSeats)}</p>
-
-      <p class="price">
-        ₹${Number(movie.ticketPrice).toLocaleString("en-IN")}
-      </p>
-
-      <div class="card-buttons">
-
-        <button class="edit-btn"
-          data-action="edit"
-          data-id="${escapeHTML(movie._id)}">
-          Edit
-        </button>
-
-        <button class="delete-btn"
-          data-action="delete"
-          data-id="${escapeHTML(movie._id)}">
-          Delete
-        </button>
-
-      </div>
-    </article>
-  `).join("");
+    } catch (error) {
+        movieList.innerHTML = `
+            <p class="empty">
+                Unable to load movies. Please check your server connection.
+                <br><br>
+                ${escapeHTML(error.message)}
+            </p>
+        `;
+    } finally {
+        refreshBtn.disabled = false;
+    }
 }
 
-// Add or update movie
-movieForm.addEventListener("submit", async event => {
-  event.preventDefault();
+// ==========================================
+// DISPLAY MOVIES
+// ==========================================
 
-  const movieData = {
-    title: document.getElementById("title").value.trim(),
-    genre: document.getElementById("genre").value,
-    language: document.getElementById("language").value.trim(),
-    duration: Number(document.getElementById("duration").value),
-    ticketPrice: Number(document.getElementById("ticketPrice").value),
-    availableSeats: Number(
-      document.getElementById("availableSeats").value
-    )
-  };
+function displayMovies(movies) {
 
-  if (
-    !movieData.title ||
-    !movieData.genre ||
-    !movieData.language ||
-    !Number.isFinite(movieData.duration) ||
-    movieData.duration < 1 ||
-    !Number.isFinite(movieData.ticketPrice) ||
-    movieData.ticketPrice < 0 ||
-    !Number.isInteger(movieData.availableSeats) ||
-    movieData.availableSeats < 0
-  ) {
-    showMessage("Please enter valid movie details.", true);
-    return;
-  }
+    if (!movies.length) {
+        movieList.innerHTML = `
+            <div class="empty">
+                <h3>No Movies Found 🎬</h3>
+                <p>Add your first movie using the form above.</p>
+            </div>
+        `;
+        return;
+    }
 
-  const isEditing = Boolean(editingId);
+    movieList.innerHTML = movies.map((movie, index) => {
 
-  const url = isEditing
-    ? `${API_URL}/${editingId}`
-    : API_URL;
+        const poster = posterImages[index % posterImages.length];
 
-  const method = isEditing ? "PUT" : "POST";
+        return `
+            <article class="movie-card">
 
-  const submitButton = document.getElementById("submitButton");
+                <img
+                    class="movie-poster"
+                    src="${poster}"
+                    alt="Cinema artwork for ${escapeHTML(movie.title)}"
+                    loading="lazy"
+                >
 
-  submitButton.disabled = true;
-  submitButton.textContent = isEditing ? "Updating..." : "Adding...";
+                <div class="movie-info">
 
-  try {
-    const data = await apiRequest(url, {
-      method,
-      body: JSON.stringify(movieData)
-    });
+                    <h3>${escapeHTML(movie.title)}</h3>
 
-    showMessage(data.message || "Movie saved successfully.");
+                    <div class="movie-tags">
+                        <span class="tag">${escapeHTML(movie.genre)}</span>
+                        <span class="tag">${escapeHTML(movie.language)}</span>
+                    </div>
 
-    resetForm();
-    await loadMovies();
+                    <p class="movie-detail">
+                        ◷ ${escapeHTML(movie.duration)} minutes
+                    </p>
 
-  } catch (error) {
-    showMessage(error.message, true);
+                    <p class="movie-detail">
+                        ♧ ${escapeHTML(movie.availableSeats)} available seats
+                    </p>
 
-  } finally {
-    submitButton.disabled = false;
-    submitButton.textContent = editingId ? "Update Movie" : "+ Add Movie";
-  }
+                    <p class="movie-price">
+                        ₹${Number(movie.ticketPrice).toLocaleString("en-IN")}
+                    </p>
+
+                    <div class="card-buttons">
+
+                        <button
+                            type="button"
+                            class="edit-btn"
+                            data-action="edit"
+                            data-id="${escapeHTML(movie._id)}"
+                        >
+                            ✎ Edit
+                        </button>
+
+                        <button
+                            type="button"
+                            class="delete-btn"
+                            data-action="delete"
+                            data-id="${escapeHTML(movie._id)}"
+                        >
+                            🗑 Delete
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </article>
+        `;
+    }).join("");
+}
+
+// ==========================================
+// UPDATE DASHBOARD STATISTICS
+// ==========================================
+
+function updateStatistics(movies) {
+
+    const totalMovies = movies.length;
+
+    const totalSeats = movies.reduce((total, movie) => {
+        return total + Number(movie.availableSeats || 0);
+    }, 0);
+
+    const totalPrice = movies.reduce((total, movie) => {
+        return total + Number(movie.ticketPrice || 0);
+    }, 0);
+
+    const averagePrice = totalMovies
+        ? Math.round(totalPrice / totalMovies)
+        : 0;
+
+    document.getElementById("totalMovies").textContent = totalMovies;
+
+    document.getElementById("totalSeats").textContent =
+        totalSeats.toLocaleString("en-IN");
+
+    document.getElementById("averagePrice").textContent =
+        `₹${averagePrice.toLocaleString("en-IN")}`;
+}
+
+// ==========================================
+// FORM VALIDATION
+// ==========================================
+
+function validateMovie(movie) {
+
+    if (!movie.title.trim()) {
+        showMessage("Please enter the movie title.", "error");
+        return false;
+    }
+
+    if (!movie.genre.trim()) {
+        showMessage("Please enter the movie genre.", "error");
+        return false;
+    }
+
+    if (!movie.language.trim()) {
+        showMessage("Please enter the movie language.", "error");
+        return false;
+    }
+
+    if (!Number.isInteger(movie.duration) || movie.duration < 1) {
+        showMessage("Duration must be a positive whole number.", "error");
+        return false;
+    }
+
+    if (!Number.isFinite(movie.ticketPrice) || movie.ticketPrice < 0) {
+        showMessage("Ticket price cannot be negative.", "error");
+        return false;
+    }
+
+    if (!Number.isInteger(movie.availableSeats) || movie.availableSeats < 0) {
+        showMessage("Available seats must be zero or a positive whole number.", "error");
+        return false;
+    }
+
+    return true;
+}
+
+// ==========================================
+// GET FORM DATA
+// ==========================================
+
+function getFormData() {
+
+    return {
+        title: document.getElementById("title").value.trim(),
+        genre: document.getElementById("genre").value.trim(),
+        language: document.getElementById("language").value.trim(),
+        duration: Number(document.getElementById("duration").value),
+        ticketPrice: Number(document.getElementById("ticketPrice").value),
+        availableSeats: Number(document.getElementById("availableSeats").value)
+    };
+}
+
+// ==========================================
+// ADD OR UPDATE MOVIE
+// ==========================================
+
+movieForm.addEventListener("submit", async function (event) {
+
+    event.preventDefault();
+
+    const movieData = getFormData();
+
+    if (!validateMovie(movieData)) {
+        return;
+    }
+
+    const isEditing = Boolean(editingMovieId);
+
+    const url = isEditing
+        ? `${API_URL}/${encodeURIComponent(editingMovieId)}`
+        : API_URL;
+
+    const method = isEditing ? "PUT" : "POST";
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = isEditing ? "Updating..." : "Adding...";
+
+    try {
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(movieData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || data.message || "Operation failed");
+        }
+
+        movieForm.reset();
+        resetEditMode();
+
+        await getMovies();
+
+        showMessage(
+            isEditing
+                ? "Movie updated successfully!"
+                : "Movie added successfully!",
+            "success"
+        );
+
+    } catch (error) {
+
+        showMessage(error.message, "error");
+
+    } finally {
+
+        submitBtn.disabled = false;
+
+        if (!editingMovieId) {
+            submitBtn.textContent = "+ Add Movie";
+        }
+    }
 });
 
-// Handle Edit and Delete buttons
-movieGrid.addEventListener("click", async event => {
-  const button = event.target.closest("button[data-action]");
+// ==========================================
+// EDIT MOVIE
+// ==========================================
 
-  if (!button) return;
+function editMovie(id) {
 
-  const id = button.dataset.id;
-  const action = button.dataset.action;
+    const movie = allMovies.find(item => item._id === id);
 
-  const movie = movies.find(item => item._id === id);
+    if (!movie) {
+        showMessage("Movie not found.", "error");
+        return;
+    }
 
-  if (!movie) return;
-
-  // Edit movie
-  if (action === "edit") {
-    editingId = id;
+    editingMovieId = id;
 
     document.getElementById("title").value = movie.title;
     document.getElementById("genre").value = movie.genre;
     document.getElementById("language").value = movie.language;
     document.getElementById("duration").value = movie.duration;
     document.getElementById("ticketPrice").value = movie.ticketPrice;
-    document.getElementById("availableSeats").value =
-      movie.availableSeats;
+    document.getElementById("availableSeats").value = movie.availableSeats;
 
-    document.getElementById("formTitle").textContent = "Update Movie";
-    document.getElementById("submitButton").textContent = "Update Movie";
-    document.getElementById("cancelButton").hidden = false;
+    submitBtn.textContent = "Update Movie";
+    cancelEditBtn.hidden = false;
 
-    document.getElementById("movieFormSection").scrollIntoView({
-      behavior: "smooth"
+    document.getElementById("add-movie").scrollIntoView({
+        behavior: "smooth"
     });
-  }
-
-  // Delete movie
-  if (action === "delete") {
-    const confirmed = confirm(
-      `Are you sure you want to delete ${movie.title}?`
-    );
-
-    if (!confirmed) return;
-
-    button.disabled = true;
-
-    try {
-      const data = await apiRequest(`${API_URL}/${id}`, {
-        method: "DELETE"
-      });
-
-      showMessage(data.message || "Movie deleted successfully.");
-
-      if (editingId === id) resetForm();
-
-      await loadMovies();
-
-    } catch (error) {
-      showMessage(error.message, true);
-      button.disabled = false;
-    }
-  }
-});
-
-// Reset form
-function resetForm() {
-  movieForm.reset();
-  editingId = null;
-
-  document.getElementById("formTitle").textContent = "Add New Movie";
-  document.getElementById("submitButton").textContent = "+ Add Movie";
-  document.getElementById("cancelButton").hidden = true;
 }
 
-// Cancel edit
-document.getElementById("cancelButton").addEventListener(
-  "click", resetForm
-);
+// ==========================================
+// RESET EDIT MODE
+// ==========================================
 
-// Search movies
-searchInput.addEventListener("input", displayMovies);
+function resetEditMode() {
 
-// Load movies when website opens
-loadMovies();
+    editingMovieId = null;
+
+    movieForm.reset();
+
+    document.getElementById("availableSeats").value = 100;
+
+    submitBtn.textContent = "+ Add Movie";
+    cancelEditBtn.hidden = true;
+}
+
+// ==========================================
+// CANCEL EDIT
+// ==========================================
+
+cancelEditBtn.addEventListener("click", function () {
+
+    resetEditMode();
+
+    showMessage("Edit cancelled.", "success");
+
+});
+
+// ==========================================
+// DELETE MOVIE
+// ==========================================
+
+async function deleteMovie(id) {
+
+    const movie = allMovies.find(item => item._id === id);
+
+    if (!movie) {
+        showMessage("Movie not found.", "error");
+        return;
+    }
+
+    const confirmDelete = confirm(
+        `Are you sure you want to delete "${movie.title}"?`
+    );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/${encodeURIComponent(id)}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || data.message || "Unable to delete movie");
+        }
+
+        if (editingMovieId === id) {
+            resetEditMode();
+        }
+
+        await getMovies();
+
+        showMessage("Movie deleted successfully!", "success");
+
+    } catch (error) {
+
+        showMessage(error.message, "error");
+
+    }
+}
+
+// ==========================================
+// MOVIE CARD BUTTON EVENTS
+// ==========================================
+
+movieList.addEventListener("click", function (event) {
+
+    const button = event.target.closest("button[data-action]");
+
+    if (!button) {
+        return;
+    }
+
+    const id = button.dataset.id;
+    const action = button.dataset.action;
+
+    if (action === "edit") {
+        editMovie(id);
+    }
+
+    if (action === "delete") {
+        deleteMovie(id);
+    }
+});
+
+// ==========================================
+// SEARCH MOVIES
+// ==========================================
+
+searchInput.addEventListener("input", function () {
+
+    const searchText = searchInput.value.toLowerCase().trim();
+
+    const filteredMovies = allMovies.filter(movie => {
+
+        return (
+            movie.title.toLowerCase().includes(searchText) ||
+            movie.genre.toLowerCase().includes(searchText) ||
+            movie.language.toLowerCase().includes(searchText)
+        );
+
+    });
+
+    displayMovies(filteredMovies);
+
+});
+
+// ==========================================
+// REFRESH MOVIES
+// ==========================================
+
+refreshBtn.addEventListener("click", getMovies);
+
+// ==========================================
+// LOAD MOVIES WHEN PAGE OPENS
+// ==========================================
+
+document.addEventListener("DOMContentLoaded", getMovies);
